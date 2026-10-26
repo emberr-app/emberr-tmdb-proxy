@@ -1,0 +1,11 @@
+name = "emberr-tmdb"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[[ratelimits]]
+name = "REQUESTS_PER_ADDRESS"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 120
+  period = 60
