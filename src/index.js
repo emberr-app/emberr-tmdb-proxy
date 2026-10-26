@@ -22,7 +22,7 @@ export default {
     if (refusal) return refusal;
 
     const callerAddress = request.headers.get("CF-Connecting-IP") ?? "unknown";
-    const { success } = await env.REQUESTS_PER_ADDRESS.limit({ key: callerAddress });
+    const { success } = await env.REQUESTS_PER_ADDRESS.limit({ key: rateLimitKeyFor(callerAddress) });
     if (!success) return plainReply(429, "Too many requests, try again in a minute");
 
     if (!env.TMDB_API_KEY) return plainReply(500, "The TMDB key isn't set up");
@@ -62,6 +62,15 @@ function refusalFor(requestUrl) {
     }
   }
   return null;
+}
+
+function rateLimitKeyFor(address) {
+  if (!address.includes(":")) return address;
+  const [start, end = ""] = address.split("::");
+  const startGroups = start ? start.split(":") : [];
+  const endGroups = end ? end.split(":") : [];
+  const missingGroups = Array(Math.max(0, 8 - startGroups.length - endGroups.length)).fill("0");
+  return [...startGroups, ...missingGroups, ...endGroups].slice(0, 4).join(":");
 }
 
 function isDetailsPath(path) {
